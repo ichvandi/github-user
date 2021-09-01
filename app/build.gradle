@@ -21,6 +21,10 @@ android {
         buildConfigField("String", "BASE_URL", '"https://api.github.com/"')
     }
 
+    buildFeatures {
+        viewBinding = true
+    }
+
     buildTypes {
         release {
             minifyEnabled false
