@@ -3,6 +3,7 @@ package com.vandoc.githubuser.util
 import com.vandoc.githubuser.data.util.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.transform
 import retrofit2.Response
 import java.net.ConnectException
 import java.net.SocketTimeoutException
@@ -33,6 +34,16 @@ fun Response<*>.getError(): Error {
     val error = errorBody()?.charStream()?.readText() ?: "Unknown Error: Can't parse error message"
     return Error(error)
 }
+
+inline fun <T, R> Flow<Resource<T>>.mapResource(crossinline mapper: (value: T) -> R): Flow<Resource<R>> =
+    transform { value ->
+        return@transform when (value) {
+            is Resource.Success -> emit(Resource.Success(mapper(value.data)))
+            is Resource.Error -> emit(Resource.Error(value.message))
+            is Resource.Loading -> emit(Resource.Loading)
+        }
+    }
+
 
 suspend fun <K, V> Flow<Pair<K, V>>.toMap(): Map<K, V> {
     val result = mutableMapOf<K, V>()
