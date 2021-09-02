@@ -18,21 +18,44 @@ class MainViewModel @Inject constructor(private val repository: GithubRepository
     private val _users: MutableStateFlow<List<User>> = MutableStateFlow(emptyList())
     val users: StateFlow<List<User>> = _users
 
-    init {
-        getUsers(1, 10)
+    private var since = 0
+    private var isLoading = false
+    private var isEmpty = false
+
+    companion object {
+        private const val PER_PAGE = 10
     }
 
-    private fun getUsers(page: Int, perPage: Int) {
+    init {
+        getUsers(since)
+    }
+
+    fun getUsers(page: Int? = null) {
+        if (isLoading && isEmpty) return
+
         viewModelScope.launch {
-            repository.getUsers(page, perPage).collect { response ->
+            isLoading = true
+            val oldUsers = _users.value
+
+            repository.getUsers(page ?: since, PER_PAGE).collect { response ->
                 when (response) {
                     is Resource.Success -> {
+                        val data = response.data
+                        if (data.isEmpty()) {
+                            isEmpty = true
+                            return@collect
+                        }
+
+                        since = response.data.last().id
+
                         _uiState.send(UiState.Success())
-                        _users.value = response.data
+                        _users.value = if (page == 0) response.data else oldUsers + response.data
                     }
                     is Resource.Error -> _uiState.send(UiState.Error(response.message))
                     is Resource.Loading -> _uiState.send(UiState.Loading)
                 }
+
+                isLoading = false
             }
         }
     }
