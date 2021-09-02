@@ -13,6 +13,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.vandoc.githubuser.base.BaseViewModel
 import com.vandoc.githubuser.databinding.ActivityMainBinding
 import com.vandoc.githubuser.model.User
+import com.vandoc.githubuser.util.disable
+import com.vandoc.githubuser.util.enable
 import com.vandoc.githubuser.util.gone
 import com.vandoc.githubuser.util.visible
 import dagger.hilt.android.AndroidEntryPoint
@@ -55,13 +57,11 @@ class MainActivity : AppCompatActivity() {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     mainViewModel.users.collect {
-                        if (it != null) {
+                        it?.let {
                             if (it.isEmpty()) {
-                                binding.ivPlaceholder.visible()
-                                binding.rvUser.gone()
+                                showPlaceholder()
                             } else {
-                                binding.ivPlaceholder.gone()
-                                binding.rvUser.visible()
+                                showData()
                             }
                         }
 
@@ -83,32 +83,49 @@ class MainActivity : AppCompatActivity() {
     private fun handleUiState(state: BaseViewModel.UiState) {
         when (state) {
             is BaseViewModel.UiState.Success -> {
-                binding.refresh.isEnabled = true
-                if (binding.refresh.isRefreshing) {
-                    binding.refresh.isRefreshing = false
-                }
-
-                binding.progressBar.gone()
+                hideSwipeRefresh()
+                enableSwipeRefresh()
             }
             is BaseViewModel.UiState.Error -> {
                 if (mainViewModel.users.value == null) {
-                    binding.ivPlaceholder.visible()
-                    binding.rvUser.gone()
+                    showPlaceholder()
                 }
 
-                binding.refresh.isEnabled = true
-                if (binding.refresh.isRefreshing) {
-                    binding.refresh.isRefreshing = false
-                }
+                hideSwipeRefresh()
+                enableSwipeRefresh()
 
-                binding.progressBar.gone()
                 Toast.makeText(this, state.message, Toast.LENGTH_SHORT).show()
             }
             is BaseViewModel.UiState.Loading -> {
-                binding.refresh.isEnabled = false
-                binding.progressBar.visible()
+                disableSwipeRefresh()
             }
         }
+    }
+
+    private fun enableSwipeRefresh() {
+        binding.refresh.enable()
+        binding.progressBar.gone()
+    }
+
+    private fun disableSwipeRefresh() {
+        binding.refresh.disable()
+        binding.progressBar.visible()
+    }
+
+    private fun hideSwipeRefresh() {
+        if (binding.refresh.isRefreshing) {
+            binding.refresh.isRefreshing = false
+        }
+    }
+
+    private fun showData() {
+        binding.ivPlaceholder.gone()
+        binding.rvUser.visible()
+    }
+
+    private fun showPlaceholder() {
+        binding.ivPlaceholder.visible()
+        binding.rvUser.gone()
     }
 
     private val scrollListener = object : RecyclerView.OnScrollListener() {
