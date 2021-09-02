@@ -2,6 +2,7 @@ package com.vandoc.githubuser.ui.main
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
@@ -9,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.vandoc.githubuser.databinding.ActivityMainBinding
+import com.vandoc.githubuser.model.User
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -26,7 +28,7 @@ class MainActivity : AppCompatActivity() {
 
         observeViewModel()
 
-        userAdapter = UserAdapter()
+        userAdapter = UserAdapter(this::handleItemClick)
         val manager = LinearLayoutManager(this)
 
         binding.rvUser.apply {
@@ -51,5 +53,9 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun handleItemClick(user: User) {
+        Toast.makeText(this, "$user", Toast.LENGTH_SHORT).show()
     }
 }

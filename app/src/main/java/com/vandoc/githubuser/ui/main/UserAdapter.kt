@@ -9,10 +9,11 @@ import coil.load
 import com.vandoc.githubuser.databinding.ItemUserBinding
 import com.vandoc.githubuser.model.User
 
-class UserAdapter : ListAdapter<User, UserAdapter.ViewHolder>(UserDiffUtil()) {
+class UserAdapter(private val onItemClicked: (User) -> Unit) :
+    ListAdapter<User, UserAdapter.ViewHolder>(UserDiffUtil()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder.from(parent)
+        return ViewHolder.from(parent, onItemClicked)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -20,18 +21,23 @@ class UserAdapter : ListAdapter<User, UserAdapter.ViewHolder>(UserDiffUtil()) {
         holder.bind(user)
     }
 
-    class ViewHolder private constructor(private val binding: ItemUserBinding) :
+    class ViewHolder private constructor(
+        private val binding: ItemUserBinding,
+        private val onItemClicked: (User) -> Unit
+    ) :
         RecyclerView.ViewHolder(binding.root) {
         companion object {
-            fun from(parent: ViewGroup): ViewHolder {
+            fun from(parent: ViewGroup, onItemClicked: (User) -> Unit): ViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
                 val view = ItemUserBinding.inflate(layoutInflater, parent, false)
-                return ViewHolder(view)
+                return ViewHolder(view, onItemClicked)
             }
         }
 
         fun bind(user: User) {
             with(binding) {
+                root.setOnClickListener { onItemClicked(user) }
+
                 ivAvatar.load(user.avatar)
 
                 tvId.text = user.id.toString()
