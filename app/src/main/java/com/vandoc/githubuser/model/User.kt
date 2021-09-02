@@ -14,7 +14,7 @@ data class User(
     val id: Int,
     val username: String,
     val avatar: String,
-    val location: String,
+    val location: String?,
     val email: String?,
     val createdAt: String
 )
