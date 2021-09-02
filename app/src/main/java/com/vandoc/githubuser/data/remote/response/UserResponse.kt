@@ -4,14 +4,14 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
-data class UserMinimal(
+data class UserMinimalResponse(
     val id: Int,
     @Json(name = "login") val username: String,
     @Json(name = "avatar_url") val avatar: String
 )
 
 @JsonClass(generateAdapter = true)
-data class User(
+data class UserResponse(
     val id: Int,
     @Json(name = "login") val username: String,
     @Json(name = "avatar_url") val avatar: String,

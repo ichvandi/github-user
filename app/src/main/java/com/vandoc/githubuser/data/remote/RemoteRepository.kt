@@ -1,7 +1,7 @@
 package com.vandoc.githubuser.data.remote
 
-import com.vandoc.githubuser.data.remote.response.User
-import com.vandoc.githubuser.data.remote.response.UserMinimal
+import com.vandoc.githubuser.data.remote.response.UserMinimalResponse
+import com.vandoc.githubuser.data.remote.response.UserResponse
 import com.vandoc.githubuser.data.util.Resource
 import com.vandoc.githubuser.util.Helper
 import com.vandoc.githubuser.util.getError
@@ -11,7 +11,7 @@ import javax.inject.Singleton
 @Singleton
 class RemoteRepository @Inject constructor(private val service: GithubService) {
 
-    suspend fun getUsers(page: Int, perPage: Int): Resource<List<UserMinimal>> {
+    suspend fun getUsers(page: Int, perPage: Int): Resource<List<UserMinimalResponse>> {
         return Helper.runCatching {
             val response = service.getUsers(page, perPage)
             if (response.isSuccessful) {
@@ -22,7 +22,7 @@ class RemoteRepository @Inject constructor(private val service: GithubService) {
         }
     }
 
-    suspend fun getUserDetail(username: String): Resource<User> {
+    suspend fun getUserDetail(username: String): Resource<UserResponse> {
         return Helper.runCatching {
             val response = service.getUserDetail(username)
             if (response.isSuccessful) {
