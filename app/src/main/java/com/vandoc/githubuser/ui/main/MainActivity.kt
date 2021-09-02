@@ -1,7 +1,8 @@
-package com.vandoc.githubuser
+package com.vandoc.githubuser.ui.main
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.vandoc.githubuser.R
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
