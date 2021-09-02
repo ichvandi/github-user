@@ -9,7 +9,7 @@ abstract class BaseViewModel : ViewModel() {
     val uiState = _uiState.receiveAsFlow()
 
     sealed class UiState {
-        data class Success(val message: String?) : UiState()
+        data class Success(val message: String? = null) : UiState()
         data class Error(val message: String) : UiState()
         object Loading : UiState()
     }
