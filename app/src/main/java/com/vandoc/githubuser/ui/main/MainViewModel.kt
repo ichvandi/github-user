@@ -15,8 +15,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(private val repository: GithubRepository) :
     BaseViewModel() {
-    private val _users: MutableStateFlow<List<User>> = MutableStateFlow(emptyList())
-    val users: StateFlow<List<User>> = _users
+    private val _users: MutableStateFlow<List<User>?> = MutableStateFlow(null)
+    val users: StateFlow<List<User>?> = _users
 
     private var since = 0
     private var isLoading = false
@@ -35,7 +35,7 @@ class MainViewModel @Inject constructor(private val repository: GithubRepository
 
         viewModelScope.launch {
             isLoading = true
-            val oldUsers = _users.value
+            val oldUsers = _users.value ?: emptyList()
 
             repository.getUsers(page ?: since, PER_PAGE).collect { response ->
                 when (response) {

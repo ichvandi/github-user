@@ -1,7 +1,6 @@
 package com.vandoc.githubuser.ui.main
 
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -11,8 +10,11 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.vandoc.githubuser.base.BaseViewModel
 import com.vandoc.githubuser.databinding.ActivityMainBinding
 import com.vandoc.githubuser.model.User
+import com.vandoc.githubuser.util.gone
+import com.vandoc.githubuser.util.visible
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -53,17 +55,22 @@ class MainActivity : AppCompatActivity() {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     mainViewModel.users.collect {
-                        if (binding.refresh.isRefreshing) {
-                            binding.refresh.isRefreshing = false
+                        if (it != null) {
+                            if (it.isEmpty()) {
+                                binding.ivPlaceholder.visible()
+                                binding.rvUser.gone()
+                            } else {
+                                binding.ivPlaceholder.gone()
+                                binding.rvUser.visible()
+                            }
                         }
+
                         userAdapter.submitList(it)
                     }
                 }
 
                 launch {
-                    mainViewModel.uiState.collect {
-                        Log.e("MainState", it.toString())
-                    }
+                    mainViewModel.uiState.collect { handleUiState(it) }
                 }
             }
         }
@@ -71,6 +78,37 @@ class MainActivity : AppCompatActivity() {
 
     private fun handleItemClick(user: User) {
         Toast.makeText(this, "$user", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun handleUiState(state: BaseViewModel.UiState) {
+        when (state) {
+            is BaseViewModel.UiState.Success -> {
+                binding.refresh.isEnabled = true
+                if (binding.refresh.isRefreshing) {
+                    binding.refresh.isRefreshing = false
+                }
+
+                binding.progressBar.gone()
+            }
+            is BaseViewModel.UiState.Error -> {
+                if (mainViewModel.users.value == null) {
+                    binding.ivPlaceholder.visible()
+                    binding.rvUser.gone()
+                }
+
+                binding.refresh.isEnabled = true
+                if (binding.refresh.isRefreshing) {
+                    binding.refresh.isRefreshing = false
+                }
+
+                binding.progressBar.gone()
+                Toast.makeText(this, state.message, Toast.LENGTH_SHORT).show()
+            }
+            is BaseViewModel.UiState.Loading -> {
+                binding.refresh.isEnabled = false
+                binding.progressBar.visible()
+            }
+        }
     }
 
     private val scrollListener = object : RecyclerView.OnScrollListener() {
