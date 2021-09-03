@@ -2,9 +2,10 @@ package com.vandoc.githubuser.ui.main
 
 import androidx.lifecycle.viewModelScope
 import com.vandoc.githubuser.base.BaseViewModel
-import com.vandoc.githubuser.data.GithubRepository
+import com.vandoc.githubuser.data.GithubDataSource
 import com.vandoc.githubuser.data.util.Resource
 import com.vandoc.githubuser.model.User
+import com.vandoc.githubuser.util.DispatcherProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,8 +14,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(private val repository: GithubRepository) :
-    BaseViewModel() {
+class MainViewModel @Inject constructor(
+    private val dispatchers: DispatcherProvider,
+    private val repository: GithubDataSource
+) : BaseViewModel() {
     private val _users: MutableStateFlow<List<User>?> = MutableStateFlow(null)
     val users: StateFlow<List<User>?> = _users
 
@@ -33,7 +36,7 @@ class MainViewModel @Inject constructor(private val repository: GithubRepository
     fun getUsers(page: Int? = null) {
         if (isLoading && isEmpty) return
 
-        viewModelScope.launch {
+        viewModelScope.launch(dispatchers.io) {
             isLoading = true
             val oldUsers = _users.value ?: emptyList()
 
